@@ -635,6 +635,9 @@ DEFine PROCedure rec_statement(text$)
     rec_put remaining$: rc_routine=0: RETurn
   END IF
   IF kind$="REFERENCE" THEN RETurn
+  ## Turbo MANIFEST consumes assignments on this same physical BASIC line.
+  ## Splitting the colons turns constants into ordinary runtime variables.
+  IF kind$="MANIFEST" THEN rec_put remaining$: RETurn
   IF kind$="IF" THEN
     depth=0: thenat=0: elseat=0: endat=0
     FOR i=2 TO b

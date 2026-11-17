@@ -39,6 +39,7 @@ def run_case(case):
         ok=ok and done=='ERROR' and case['error'].lower() in log.lower() and not (folder/'output_bas').exists()
     else:
         ok=ok and done=='OK' and result==case['expected'].strip()
+        ok=ok and all(fragment in read('output_bas') for fragment in case.get('source_contains',[]))
     return dict(name=case['name'],passed=ok,seconds=round(time.monotonic()-started,1),done=done,result=result,error=log.replace(chr(1),''),syntax=syntax,folder=str(folder))
 
 cases=json.loads((ROOT/'Tests'/'rejections.json').read_text(encoding='utf-8'))
@@ -57,6 +58,7 @@ cases.append(dict(name='preserved-blank-labels',source=(ROOT/'Tests'/'preserved-
 for case in json.loads((ROOT/'Tests'/'long-lines.json').read_text(encoding='utf-8')):
     cases.append(dict(name=case['name'],source=(ROOT/'Tests'/(case['name']+'.ssb')).read_text(encoding='ascii'),expected=case['expected']))
 cases.append(dict(name='standalone-colon',source=(ROOT/'Tests'/'standalone-colon.ssb').read_text(encoding='ascii'),expected='2'))
+cases.append(dict(name='manifest-records',source=(ROOT/'Tests'/'manifest-records.ssb').read_text(encoding='ascii'),expected='7,a:b\nkept',source_contains=['MANIFEST : MaxLabel = 12','MANIFEST : Marker% = 7 : Label$ = \"a:b\"']))
 if len(sys.argv)>1:cases=[c for c in cases if c['name'] in sys.argv[1:]]
 results=[]
 with cf.ThreadPoolExecutor(max_workers=3) as pool:
